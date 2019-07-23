@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <title>Aergo Connect API Test</title>
+  <script>
+    function startSignRequest() {
+      window.postMessage({
+        type: 'AERGO_REQUEST',
+        action: 'SIGN',
+        data: {
+          hash: 'abcdefg'
+        }
+      });
+    }
+    function getActiveAccount() {
+      window.postMessage({
+        type: 'AERGO_REQUEST',
+        action: 'ACTIVE_ACCOUNT',
+      });
+    }
+    window.addEventListener('AERGO_SIGN_RESULT', function(event) {
+      console.log(event.detail);
+    });
+    window.addEventListener('AERGO_ACTIVE_ACCOUNT', function(event) {
+      console.log(event.detail);
+      document.getElementById('address').innerHTML = event.detail.account.address;
+    });
+  </script>
+  <style>
+    html {
+      background-color: #f0f0f0;
+    }
+  body {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #fff;
+    font-family: sans-serif;
+  }
+  .input {
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    display: flex;
+    height: 40px;
+    padding: 7px;
+    align-items: center;
+  }
+  .input > :first-child {
+    flex: 1;
+  }
+  .input .text-input {
+    align-self: stretch;
+    border: 0;
+    font: inherit;
+  }
+  button {
+    background-color: #fff;
+    border: 1px solid #aaa;
+    padding: .5em 2em;
+    border-radius: 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .btn-primary {
+    background-color: #466efd;
+    border-color: #466efd;
+    color: #fff;
+  }
+  .adr {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  label {
+    display: block;
+    margin-bottom: 1em;
+  }
+  label > .input {
+    margin-top: 5px;
+  }
+  </style>
+</head>
+<body>
+  <h1>Aergo Connect API Test</h1>
+
+  <label>
+    Address
+    <div class="input">
+      <span id="address" class="adr"></span>
+      <button onclick="getActiveAccount()" class="btn-primary">Get Account</button>
+    </div>
+  </label>
+
+  <label>
+    Message to sign
+    <div class="input">
+      <input type="text" class="text-input" value="Abc">
+    </div>
+  </label>
+  
+  <button onclick="startSignRequest()">Start Sign Request</button>
+</body>
+</html>
