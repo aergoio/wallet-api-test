@@ -5,6 +5,7 @@
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <title>Aergo Connect API Test</title>
   <script src="https://unpkg.com/@herajs/crypto@0.10.4/dist/herajs-crypto.umd.js"></script>
+  <script src="https://unpkg.com/jsonlint"></script>
   <script src="./script.js"></script>
   <style>
     html {
@@ -16,6 +17,9 @@
     padding: 30px;
     background-color: #fff;
     font-family: sans-serif;
+  }
+  h2 {
+    margin: 1em 0 0em;
   }
   .input {
     border: 1px solid #ddd;
@@ -32,6 +36,9 @@
     align-self: stretch;
     border: 0;
     font: inherit;
+  }
+  .input .json-input {
+    font-family: monospace;
   }
   button {
     background-color: #fff;
@@ -57,18 +64,26 @@
   }
   .label {
     display: block;
-    margin: 2em 0 .5em;
+    margin: 1.5em 0 .5em;
+  }
+  .note {
+    color: #777;
+    margin: .5em 0 1em;
   }
   </style>
 </head>
 <body>
   <h1>Aergo Connect API Test</h1>
 
+  <h2>Get active account address</h2>
+
   <div class="label">Address</div>
   <div class="input">
     <input type="text" class="text-input" id="address">
     <button onclick="getActiveAccount()">Get Account</button>
   </div>
+
+  <h2>Message signing</h2>
 
   <div class="label">Message to sign</div>
   <div class="input">
@@ -85,6 +100,35 @@
   <div class="input">
     <span id="verify"></span>
     <button onclick="verify()">Verify Signature</button>
+  </div>
+
+  <h2>Transaction signing and sending</h2>
+
+  <div class="label">Transaction JSON</div>
+  <div class="input">
+    <textarea class="text-input json-input" id="txJson" style="height: 12em" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
+  "from": "",
+  "to": "",
+  "amount": "0 aer",
+  "payload_json": {
+    "Name": "setRate",
+    "Args": [{"_bignum": "9070000000"}]
+  }
+}
+    </textarea>
+  </div>
+  <div class="note">Note: use `payload` instead of `payload_json` to pass an arbitrary base64 payload. `payload_json` is preferred for usability and security.</div>
+
+  <div class="label">Signature</div>
+  <div class="input">
+    <input type="text" class="text-input" id="tx_signature">
+    <button onclick="startTxSignRequest()" class="btn-primary">Start Sign Request</button>
+  </div>
+
+  <div class="label">Send transaction</div>
+  <div class="input">
+    <span id="tx_hash"></span>
+    <button onclick="startTxSendRequest()" class="btn-primary">Start Send Request</button>
   </div>
   
 </body>

@@ -1,8 +1,17 @@
 
+/* active account */
 function getActiveAccount() {
   window.addEventListener('AERGO_ACTIVE_ACCOUNT', function(event) {
     console.log(event.detail);
     document.getElementById('address').value = event.detail.account.address;
+    // insert into txBody if not changed
+    try {
+      let txData = JSON.parse(document.getElementById('txJson').value);
+      if (!txData.from) {
+        txData.from = event.detail.account.address;
+        document.getElementById('txJson').value = JSON.stringify(txData, undefined, 2);
+      }
+    } catch(e) {}
   }, { once: true });
   window.postMessage({
     type: 'AERGO_REQUEST',
@@ -10,6 +19,7 @@ function getActiveAccount() {
   });
 }
 
+/* message sign */
 function startSignRequest() {
   window.addEventListener('AERGO_SIGN_RESULT', function(event) {
     console.log(event.detail);
@@ -23,10 +33,6 @@ function startSignRequest() {
     }
   });
 }
-
-const fromHexString = hexString =>
-  new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-
 async function verify() {
   const addr = document.getElementById('address').value;
   if (!addr) {
@@ -45,5 +51,78 @@ async function verify() {
     document.getElementById('verify').innerHTML = 'Verified ✓';
   } else {
     document.getElementById('verify').innerHTML = 'Not verified ✗';
+  }
+}
+
+/* tx sign */
+function startTxSignRequest() {
+  let data;
+  try {
+    data = jsonlint.parse(document.getElementById('txJson').value)
+  } catch(e) {
+    console.log(e);
+    alert('Could not parse tx json. ' + e);
+    return;
+  }
+
+  window.addEventListener('AERGO_SIGN_TX_RESULT', function(event) {
+    console.log('AERGO_SIGN_TX_RESULT', event.detail);
+    document.getElementById('tx_signature').value = event.detail.signature;
+  }, { once: true });
+  window.postMessage({
+    type: 'AERGO_REQUEST',
+    action: 'SIGN_TX',
+    data
+  });
+}
+function startTxSendRequest() {
+  let data;
+  try {
+    data = jsonlint.parse(document.getElementById('txJson').value)
+  } catch(e) {
+    console.log(e);
+    alert('Could not parse tx json. ' + e);
+    return;
+  }
+
+  window.addEventListener('AERGO_SEND_TX_RESULT', function(event) {
+    console.log('AERGO_SEND_TX_RESULT', event.detail);
+    document.getElementById('tx_hash').innerHTML = event.detail.hash;
+  }, { once: true });
+  window.postMessage({
+    type: 'AERGO_REQUEST',
+    action: 'SEND_TX',
+    data
+  });
+}
+
+
+/** utils */
+const fromHexString = hexString =>
+  new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+
+const hexToBase64 = hexString => {
+    return btoa(hexString.match(/\w{2}/g).map(function(a) {
+        return String.fromCharCode(parseInt(a, 16));
+    }).join(""));
+}
+
+
+function setCaretPosition(elemId, caretPos) {
+  var elem = document.getElementById(elemId);
+  if (elem != null) {
+    if (elem.createTextRange) {
+      var range = elem.createTextRange();
+      range.move('character', caretPos);
+      range.select();
+    }
+    else {
+      if (elem.selectionStart) {
+        elem.focus();
+        elem.setSelectionRange(caretPos, caretPos);
+      }
+      else
+        elem.focus();
+    }
   }
 }
