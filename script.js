@@ -96,7 +96,6 @@ function startTxSendRequest() {
   });
 }
 
-
 /** utils */
 const fromHexString = hexString =>
   new Uint8Array(hexString.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
@@ -105,24 +104,4 @@ const hexToBase64 = hexString => {
     return btoa(hexString.match(/\w{2}/g).map(function(a) {
         return String.fromCharCode(parseInt(a, 16));
     }).join(""));
-}
-
-
-function setCaretPosition(elemId, caretPos) {
-  var elem = document.getElementById(elemId);
-  if (elem != null) {
-    if (elem.createTextRange) {
-      var range = elem.createTextRange();
-      range.move('character', caretPos);
-      range.select();
-    }
-    else {
-      if (elem.selectionStart) {
-        elem.focus();
-        elem.setSelectionRange(caretPos, caretPos);
-      }
-      else
-        elem.focus();
-    }
-  }
 }
