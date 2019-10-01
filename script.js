@@ -1,45 +1,48 @@
+/**
+ * Wrapper to make a promise out of a async call to Aergo Connect
+ */
+function aergoConnectCall(action, responseType, data) {
+  return new Promise((resolve) => {
+    window.addEventListener(responseType, function(event) {
+      resolve(event.detail);
+    }, { once: true });
+    window.postMessage({
+      type: 'AERGO_REQUEST',
+      action: action,
+      data: data,
+    });
+  });
+}
 
 /* active account */
-function getActiveAccount() {
-  window.addEventListener('AERGO_ACTIVE_ACCOUNT', function(event) {
-    console.log(event.detail);
-    document.getElementById('address').value = event.detail.account.address;
-    // insert into txBody if not changed
-    try {
-      let txData = JSON.parse(document.getElementById('txJson').value);
-      if (!txData.from) {
-        txData.from = event.detail.account.address;
-        document.getElementById('txJson').value = JSON.stringify(txData, undefined, 2);
-      }
-    } catch(e) {}
-  }, { once: true });
-  window.postMessage({
-    type: 'AERGO_REQUEST',
-    action: 'ACTIVE_ACCOUNT',
-  });
+async function getActiveAccount() {
+  const result = await aergoConnectCall('ACTIVE_ACCOUNT', 'AERGO_ACTIVE_ACCOUNT', {});
+  document.getElementById('address').value = result.account.address;
+  // insert into txBody if not changed
+  try {
+    let txData = JSON.parse(document.getElementById('txJson').value);
+    if (!txData.from) {
+      txData.from = result.account.address;
+      document.getElementById('txJson').value = JSON.stringify(txData, undefined, 2);
+    }
+  } catch(e) {}
 }
 
 /* message sign */
-function startSignRequest() {
-  window.addEventListener('AERGO_SIGN_RESULT', function(event) {
-    console.log(event.detail);
-    document.getElementById('signature').value = event.detail.signature;
-  }, { once: true });
-  window.postMessage({
-    type: 'AERGO_REQUEST',
-    action: 'SIGN',
-    data: {
-      hash: document.getElementById('signMessage').value
-    }
+async function startSignRequest() {
+  const result = await aergoConnectCall('SIGN', 'AERGO_SIGN_RESULT', {
+    hash: document.getElementById('signMessage').value
   });
+  document.getElementById('signature').value = result.signature;
 }
+
 async function verify() {
   const addr = document.getElementById('address').value;
   if (!addr) {
     alert("Enter address");
     return;
   }
-  const key = HerajsCrypto.publicKeyFromAddress(addr);
+  const key = window.HerajsCrypto.publicKeyFromAddress(addr);
   const msg = fromHexString(document.getElementById('signMessage').value.slice(2));
   const signature = document.getElementById('signature').value;
   if (!signature) {
@@ -54,46 +57,27 @@ async function verify() {
   }
 }
 
-/* tx sign */
-function startTxSignRequest() {
-  let data;
+function parseJson(json) {
   try {
-    data = jsonlint.parse(document.getElementById('txJson').value)
+    return jsonlint.parse(json)
   } catch(e) {
-    console.log(e);
     alert('Could not parse tx json. ' + e);
-    return;
+    throw e;
   }
-
-  window.addEventListener('AERGO_SIGN_TX_RESULT', function(event) {
-    console.log('AERGO_SIGN_TX_RESULT', event.detail);
-    document.getElementById('tx_signature').value = event.detail.signature;
-  }, { once: true });
-  window.postMessage({
-    type: 'AERGO_REQUEST',
-    action: 'SIGN_TX',
-    data
-  });
 }
-function startTxSendRequest() {
-  let data;
-  try {
-    data = jsonlint.parse(document.getElementById('txJson').value)
-  } catch(e) {
-    console.log(e);
-    alert('Could not parse tx json. ' + e);
-    return;
-  }
 
-  window.addEventListener('AERGO_SEND_TX_RESULT', function(event) {
-    console.log('AERGO_SEND_TX_RESULT', event.detail);
-    document.getElementById('tx_hash').innerHTML = event.detail.hash;
-  }, { once: true });
-  window.postMessage({
-    type: 'AERGO_REQUEST',
-    action: 'SEND_TX',
-    data
-  });
+/* tx sign */
+async function startTxSignRequest() {
+  let data = parseJson(document.getElementById('txJson').value);
+  const result = await aergoConnectCall('SIGN_TX', 'AERGO_SIGN_TX_RESULT', data);
+  console.log('AERGO_SIGN_TX_RESULT', result);
+  document.getElementById('tx_signature').value = result.signature;
+}
+async function startTxSendRequest() {
+  let data = parseJson(document.getElementById('txJson').value);
+  const result = await aergoConnectCall('SEND_TX', 'AERGO_SEND_TX_RESULT', data);
+  console.log('AERGO_SEND_TX_RESULT', result);
+  document.getElementById('tx_hash').innerHTML = result.hash;
 }
 
 /** utils */
