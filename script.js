@@ -4,10 +4,11 @@
 function aergoConnectCall(action, responseType, data) {
   return new Promise((resolve, reject) => {
     window.addEventListener(responseType, function(event) {
-      resolve(event.detail);
-    }, { once: true });
-    window.addEventListener(responseType + '_CANCEL', function() {
-      reject(new Error('request was cancelled by user'));
+      if ('error' in event.detail) {
+        reject(event.detail.error);
+      } else {
+        resolve(event.detail);
+      }
     }, { once: true });
     window.postMessage({
       type: 'AERGO_REQUEST',
