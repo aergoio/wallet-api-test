@@ -35,6 +35,14 @@ async function getActiveAccount() {
 /* message sign */
 async function startSignRequest() {
   const result = await aergoConnectCall('SIGN', 'AERGO_SIGN_RESULT', {
+    message: document.getElementById('signMessage').value
+  });
+  document.getElementById('signature').value = result.signature;
+}
+
+/* message sign (locally hashed) */
+async function startSignRequestHashed() {
+  const result = await aergoConnectCall('SIGN', 'AERGO_SIGN_RESULT', {
     hash: document.getElementById('signMessage').value
   });
   document.getElementById('signature').value = result.signature;
@@ -53,8 +61,13 @@ async function verify() {
     alert("Enter signature");
     return;
   }
-  const result = await window.HerajsCrypto.verifySignature(msg, key, signature, 'hex');
-  if (result === true) {
+  let verify = await window.HerajsCrypto.verifySignature(msg, key, signature, 'hex');
+  if (!verify) {
+    // try with local hash (legacy method)
+    const hash = window.HerajsCrypto.hash(msg);
+    verify = await window.HerajsCrypto.verifySignature(hash, key, signature, 'hex');
+  }
+  if (verify) {
     document.getElementById('verify').innerHTML = 'Verified ✓';
   } else {
     document.getElementById('verify').innerHTML = 'Not verified ✗';

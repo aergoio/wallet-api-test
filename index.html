@@ -4,7 +4,7 @@
   <meta charset='utf-8'>
   <meta http-equiv='X-UA-Compatible' content='IE=edge'>
   <title>Aergo Connect API Test</title>
-  <script src="https://unpkg.com/@herajs/crypto@0.10.4/dist/herajs-crypto.umd.js"></script>
+  <script src="https://unpkg.com/@herajs/crypto@0.20.0/dist/herajs-crypto.umd.js"></script>
   <script src="https://unpkg.com/jsonlint"></script>
   <script src="./script.js"></script>
   <style>
@@ -93,7 +93,10 @@
   <div class="label">Signature</div>
   <div class="input">
     <input type="text" class="text-input" id="signature">
-    <button onclick="startSignRequest()" class="btn-primary">Start Sign Request</button>
+    <div>
+      <button onclick="startSignRequest()" class="btn-primary">Sign Request (Unhashed)</button><br>
+      <button onclick="startSignRequestHashed()" class="btn-primary">Sign Request (Pre-hashed)</button>
+    </div>
   </div>
 
   <div class="label">Verification</div>
@@ -107,12 +110,11 @@
   <div class="label">Transaction JSON</div>
   <div class="input">
     <textarea class="text-input json-input" id="txJson" style="height: 12em" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{
-  "from": "",
-  "to": "",
+  "from": "", "to": "",
   "amount": "0 aer",
   "payload_json": {
     "Name": "setRate",
-    "Args": [{"_bignum": "9070000000"}]
+    "Args": [{"_bignum": "9070000000"}, 1, true, "foo"]
   }
 }
     </textarea>
@@ -122,13 +124,13 @@
   <div class="label">Signature</div>
   <div class="input">
     <input type="text" class="text-input" id="tx_signature">
-    <button onclick="startTxSignRequest()" class="btn-primary">Start Sign Request</button>
+    <button onclick="startTxSignRequest()" class="btn-primary">Sign Request</button>
   </div>
 
   <div class="label">Send transaction</div>
   <div class="input">
     <span id="tx_hash"></span>
-    <button onclick="startTxSendRequest()" class="btn-primary">Start Send Request</button>
+    <button onclick="startTxSendRequest()" class="btn-primary">Send Request</button>
   </div>
   
 </body>
